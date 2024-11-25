@@ -1,4 +1,4 @@
+numpy
 pandas
-matplotlib
-python-docx
-basedosdados
+scikit-learn
+scipy

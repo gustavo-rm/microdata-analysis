@@ -7,10 +7,13 @@ class DataLoader:
 
     def load_data(self):
         """Carrega os dados do arquivo CSV e retorna um DataFrame."""
-        return pd.read_csv(self.file_path)
+        return pd.read_csv(self.file_path, low_memory=False)
 
     def preprocess_data(self, df):
         """Realiza limpeza e transformação básica nos dados."""
+        # Substituir NaN por "Desconhecido" e converter para string
+        df['tipo_salario'] = df['tipo_salario'].fillna("Desconhecido").astype(str)
+        
         # Remove linhas com valores críticos ausentes
         df = df.dropna(subset=['cbo_2002', 'valor_remuneracao_media', 'idade', 'sigla_uf'])
 
