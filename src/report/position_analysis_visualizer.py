@@ -1,6 +1,7 @@
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 from src.report.base_visualizer import BaseVisualizer
 from src.analysis.position_analysis import PositionAnalysis
 
@@ -22,27 +23,49 @@ class PositionAnalysisVisualizer(BaseVisualizer):
 
     def plot_top_positions(self, top_n=10, sort_by="Frequência", ascending=False):
         """
-        Gera um gráfico de barras horizontais para os cargos mais frequentes.
+        Gera um gráfico de barras horizontais para os cargos mais frequentes, com suporte a `hue`.
 
         Parameters:
             top_n (int): O número de cargos mais frequentes a serem exibidos.
             sort_by (str): O critério para ordenar os resultados (padrão: "Frequência").
             ascending (bool): Define se a ordenação será crescente ou decrescente.
         """
+        # Obter os dados analisados
         positions = self.analysis.analyze_unique_positions(sort_by=sort_by, ascending=ascending)
-        top_positions = positions['Cargos'].head(top_n)
+        top_positions = positions['Cargos'].head(top_n).copy()
 
+        # Adicionar uma categoria para hue (neste caso, genérica)
+        top_positions['Categoria'] = 'Cargos Mais Frequentes'
+
+        # Criar o gráfico de barras horizontais
         plt.figure(figsize=(12, 8))
         sns.barplot(
-            y=top_positions['Cargo'],
-            x=top_positions['Frequência'],
+            data=top_positions,
+            y="Cargo",
+            x="Frequência",
+            hue="Categoria",  # Adiciona `hue` para categorização
             palette="Blues_r"
         )
+
+        # Adicionar os valores ao final das barras
+        for bar in plt.gca().patches:
+            value = bar.get_width()  # Para barras horizontais, a largura representa o valor
+            if value > 0:
+                plt.text(
+                    value + 0.5,  # Ajusta a posição do texto para a direita da barra
+                    bar.get_y() + bar.get_height() / 2,  # Centraliza no eixo Y
+                    f'{value:,.0f}',  # Formata o valor como número inteiro
+                    ha='left', va='center', fontsize=10  # Alinha à esquerda da barra
+                )
+
+        # Configurações do gráfico
         plt.title(f"Top {top_n} Cargos Mais Frequentes")
         plt.xlabel("Frequência")
         plt.ylabel("Cargos")
+        plt.legend(title="Categoria", loc="lower right")
         plt.tight_layout()
 
+        # Salvar o gráfico
         self.save_plot(f"top_{top_n}_positions.png")
 
     def plot_wordcloud_positions(self):

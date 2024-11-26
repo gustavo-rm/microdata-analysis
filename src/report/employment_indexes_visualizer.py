@@ -2,6 +2,7 @@ from src.report.base_visualizer import BaseVisualizer
 from src.analysis.employment_indexes import EmploymentIndexes
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 
 
 class EmploymentIndexesVisualizer(BaseVisualizer):
@@ -24,17 +25,33 @@ class EmploymentIndexesVisualizer(BaseVisualizer):
         """
         Gera um gráfico de barras para mostrar a disparidade salarial entre gêneros.
         """
-        indexes = EmploymentIndexes(self.df)
-        salaries = self.df.groupby('sexo')['valor_remuneracao_media'].mean()
-        male_salary = salaries.get('Masculino', 0)
-        female_salary = salaries.get('Feminino', 0)
+        # Obter as médias salariais por gênero
+        salaries = self.df.groupby('sexo')['valor_remuneracao_media'].mean().reset_index()
 
+        # Renomear as colunas para facilitar a interpretação
+        salaries.columns = ['Gênero', 'Salário Médio']
+
+        # Criar uma categoria genérica para o parâmetro `hue`
+        salaries['Categoria'] = 'Salários por Gênero'
+
+        # Configurar o gráfico
         plt.figure(figsize=(8, 6))
-        sns.barplot(x=['Masculino', 'Feminino'], y=[male_salary, female_salary], palette="Blues")
+        sns.barplot(
+            data=salaries,
+            x='Gênero',
+            y='Salário Médio',
+            hue='Categoria',  # Categoria genérica para demonstrar uso de `hue`
+            palette="Blues"
+        )
+
+        # Configurações do gráfico
         plt.title("Disparidade Salarial entre Gêneros")
         plt.ylabel("Salário Médio")
         plt.xlabel("Gênero")
+        plt.legend(title="Categoria", loc="upper right")
         plt.tight_layout()
+
+        # Salvar o gráfico
         self.save_plot("salary_disparity.png")
 
     def plot_regional_concentration(self):

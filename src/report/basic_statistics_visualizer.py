@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import seaborn as sns
+import pandas as pd
 from src.report.base_visualizer import BaseVisualizer
 from src.analysis.basic_statistics import BasicStatistics
 
@@ -96,21 +97,39 @@ class BasicStatisticsVisualizer(BaseVisualizer):
         # Obter as métricas
         stats = BasicStatistics(self.df).salary_distribution()
 
-        metrics = {
-            "Média\nSalarial": stats['Média Salarial'],
-            "Mediana\nSalarial": stats['Mediana Salarial'],
-            "Desvio\nPadrão": stats['Desvio Padrão'],
-            "Coeficiente de\nVariação (%)": stats['Coeficiente de Variação (%)']
-        }
+        # Reestruturar os dados em um DataFrame, removendo o "Coeficiente de Variação (%)"
+        metrics_data = pd.DataFrame({
+            'Métrica': ["Média Salarial", "Mediana Salarial", "Desvio Padrão"],
+            'Categoria': ["Estatísticas"] * 3,  # Criar uma categoria genérica
+            'Valor': [stats['Média Salarial'], stats['Mediana Salarial'], stats['Desvio Padrão']]
+        })
 
         # Criar o gráfico
         plt.figure(figsize=(10, 6))
-        sns.barplot(x=list(metrics.keys()), y=list(metrics.values()), palette="viridis")
+        sns.barplot(
+            data=metrics_data,
+            x="Métrica",
+            y="Valor",
+            hue="Categoria",  # Especifica a categorização para as cores
+            palette="viridis"
+        )
+
+        # Adicionar os valores nas barras
+        for bar in plt.gca().patches:  # Pega todas as barras do gráfico
+            value = bar.get_height()  # Obtém o valor da barra
+            if value > 0:
+                plt.gca().text(
+                    bar.get_x() + bar.get_width() / 2,  # Posição X (centro da barra)
+                    value + (value * 0.01),  # Posição Y (logo acima da barra)
+                    f'{value:,.2f}',  # Formatação com 2 casas decimais
+                    ha='center', va='bottom', fontsize=10
+                )
+
+        # Configurações do gráfico
         plt.title("Comparação de Métricas Salariais")
         plt.ylabel("Valor")
-
-        # Ajustar os rótulos do eixo x com quebra de linha
         plt.xticks(rotation=0)  # Mantém os rótulos alinhados
+        plt.legend(title="Categoria", loc="upper right")  # Personaliza a legenda
         plt.tight_layout()  # Ajusta o layout para evitar cortes
 
         # Salvar o gráfico

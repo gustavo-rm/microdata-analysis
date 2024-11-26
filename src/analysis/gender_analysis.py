@@ -88,3 +88,98 @@ class GenderAnalysis:
             "Razão de Gêneros": males / females if females > 0 else None,
             "Diferença Salarial": salary_by_gender.get('Masculino', 0) - salary_by_gender.get('Feminino', 0)
         }
+
+    def compare_salary_by_gender_top_10_jobs(self):
+        """
+        Compara a média salarial entre homens e mulheres nos 10 cargos com mais empregados.
+
+        Returns:
+            pd.DataFrame: Um DataFrame contendo os 10 cargos com mais empregados e as seguintes informações:
+                - Cargo
+                - Total de Empregados
+                - Salário Médio Masculino
+                - Salário Médio Feminino
+                - Diferença Salarial (Homens - Mulheres)
+        """
+        # Contar o número de empregados por cargo
+        job_counts = self.df['cbo_2002_descricao'].value_counts().head(10).index
+
+        # Filtrar o DataFrame para os 10 cargos com mais empregados
+        top_jobs_df = self.df[self.df['cbo_2002_descricao'].isin(job_counts)]
+
+        # Calcular a média salarial por gênero e cargo
+        gender_salary = (
+            top_jobs_df.groupby(['cbo_2002_descricao', 'sexo'])['valor_remuneracao_media']
+            .mean()
+            .unstack(fill_value=0)  # Organiza em colunas para "Masculino" e "Feminino"
+            .reset_index()
+        )
+
+        # Adicionar total de empregados por cargo
+        total_employees = (
+            top_jobs_df.groupby('cbo_2002_descricao')['cbo_2002_descricao']
+            .count()
+            .rename("Total de Empregados")
+        )
+
+        # Adicionar a diferença salarial
+        gender_salary['Diferença Salarial'] = (
+                gender_salary.get('Masculino', 0) - gender_salary.get('Feminino', 0)
+        )
+
+        # Combinar os dados em um único DataFrame
+        result = gender_salary.merge(
+            total_employees, left_on='cbo_2002_descricao', right_index=True
+        )
+
+        # Renomear as colunas para melhor interpretação
+        result.rename(
+            columns={
+                'cbo_2002_descricao': 'Cargo',
+                'Masculino': 'Salário Médio Masculino',
+                'Feminino': 'Salário Médio Feminino',
+            },
+            inplace=True,
+        )
+
+        return result.sort_values('Total de Empregados', ascending=False).reset_index(drop=True)
+
+    def top_active_employees_by_year(self):
+        """
+        Calcula qual empregado (homem ou mulher) tem mais vínculos ativos para cada ano.
+
+        Returns:
+            pd.DataFrame: Um DataFrame contendo:
+                - Ano
+                - Sexo
+                - ID do Município
+                - Total de Vínculos Ativos
+        """
+        # Contar um vínculo ativo apenas se 'vinculo_ativo_3112' for 'Sim'
+        self.df['quantidade_vinculos_ativos'] = self.df['vinculo_ativo_3112'].apply(lambda x: 1 if x == 'Sim' else 0)
+
+        # Filtrar apenas os registros com vínculos ativos
+        active_df = self.df[self.df['vinculo_ativo_3112'] == "Sim"]
+
+        # Agrupar por ano, sexo e município, somando os vínculos ativos
+        grouped = (
+            active_df.groupby(['ano', 'sexo', 'id_municipio'])
+            .agg({'quantidade_vinculos_ativos': 'sum'})
+            .reset_index()
+        )
+
+        # Identificar o registro com mais vínculos ativos para cada ano e gênero
+        top_active = grouped.loc[grouped.groupby(['ano', 'sexo'])['quantidade_vinculos_ativos'].idxmax()]
+
+        # Renomear as colunas para facilitar a leitura
+        top_active.rename(
+            columns={
+                'ano': 'Ano',
+                'sexo': 'Gênero',
+                'id_municipio': 'ID Município',
+                'quantidade_vinculos_ativos': 'Total de Vínculos Ativos',
+            },
+            inplace=True,
+        )
+
+        return top_active.reset_index(drop=True)

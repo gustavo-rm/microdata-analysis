@@ -105,3 +105,37 @@ class RegionalAnalysis:
         average_salary = self.df.groupby(group_col)['valor_remuneracao_media'].mean().reset_index()
         average_salary.columns = [label, 'Salário Médio']
         return average_salary
+
+    def average_salary_top_5_cities(self):
+        """
+        Calcula a média salarial nas 5 cidades mais populosas do Paraná (PR).
+
+        As cidades consideradas são:
+            - Curitiba
+            - Londrina
+            - Maringá
+            - Ponta Grossa
+            - Cascavel
+
+        Returns:
+            dict: Um dicionário com as cidades como chaves e suas respectivas médias salariais.
+        """
+        # Define as cidades mais populosas do Paraná
+        top_cities = {
+            'Curitiba': 4106902,
+            'Londrina': 4113700,
+            'Maringá': 4115200,
+            'Ponta Grossa': 4119905,
+            'Cascavel': 4104808
+        }
+
+        # Filtrar os dados para o estado do Paraná (PR) e as cidades selecionadas
+        df_pr = self.df[(self.df['sigla_uf'] == 'PR') & (self.df['id_municipio'].isin(top_cities.values()))]
+
+        # Agrupar por município e calcular a média salarial
+        city_salary = df_pr.groupby('id_municipio')['valor_remuneracao_media'].mean()
+
+        # Mapear IDs de municípios para nomes de cidades
+        city_salary_named = {city: city_salary.get(municipio_id, None) for city, municipio_id in top_cities.items()}
+
+        return city_salary_named
