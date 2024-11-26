@@ -1,7 +1,9 @@
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, accuracy_score, classification_report
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 class PredictiveModels:
     """
@@ -96,29 +98,38 @@ class PredictiveModels:
                 print(results['Relatório de Classificação'])
         """
         # Define as variáveis independentes
-        features = ['idade', 'sigla_uf']
-
-        # Adiciona sexo como variável numérica, se disponível
-        if 'sexo' in self.df.columns:
-            self.df['sexo_num'] = LabelEncoder().fit_transform(self.df['sexo'])
-            features.append('sexo_num')
+        features = ['idade', 'sigla_uf', 'sexo']
 
         # Remove valores nulos das colunas relevantes
         df_clean = self.df.dropna(subset=features + ['vinculo_ativo_3112'])
 
         # Define X (variáveis independentes) e y (variável dependente)
         X = df_clean[features]
-        y = df_clean['vinculo_ativo_3112'].apply(lambda x: 1 if x == "Sim" else 0)
+        y = df_clean['vinculo_ativo_3112'].apply(lambda x: 1 if x == "Sim" else 0)  # Binário
 
-        # Divide os dados em conjuntos de treino e teste
+        # Converter variáveis categóricas para numéricas
+        preprocessor = ColumnTransformer(
+            transformers=[
+                ('cat', OneHotEncoder(drop='first'), ['sigla_uf', 'sexo']),
+                ('num', 'passthrough', ['idade']),
+            ]
+        )
+
+        # Criar o pipeline com o modelo
+        model = Pipeline([
+            ('preprocessor', preprocessor),
+            ('classifier', LogisticRegression(max_iter=1000))
+        ])
+
+        # Dividir os dados em conjuntos de treino e teste
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Treina o modelo de Regressão Logística
-        model = LogisticRegression(max_iter=1000)
+        # Treinar o modelo
         model.fit(X_train, y_train)
 
         # Retorna as métricas de avaliação
+        predictions = model.predict(X_test)
         return {
-            "Acurácia": accuracy_score(y_test, model.predict(X_test)),
-            "Relatório de Classificação": classification_report(y_test, model.predict(X_test), output_dict=True)
+            "Acurácia": accuracy_score(y_test, predictions),
+            "Relatório de Classificação": classification_report(y_test, predictions, output_dict=True)
         }

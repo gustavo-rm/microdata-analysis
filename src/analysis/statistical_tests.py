@@ -91,8 +91,8 @@ class StatisticalTests:
         Exemplo de Uso:
             anova_salary_by_sector()
         """
-        # Agrupa salários por setor (coluna 'subsetor_ibge')
-        grouped_salaries = self.df.groupby('subsetor_ibge')['valor_remuneracao_media'].apply(list)
+        # Agrupa salários por setor (coluna 'cbo_2002')
+        grouped_salaries = self.df.groupby('cbo_2002')['valor_remuneracao_media'].apply(list)
 
         # Aplica ANOVA apenas se houver mais de um grupo
         if len(grouped_salaries) < 2:

@@ -1,29 +1,74 @@
-from docx import Document
+import os
 
 class ReportGenerator:
-    def __init__(self, analysis_results, output_path):
-        self.analysis_results = analysis_results
-        self.output_path = output_path
+    """
+    Classe para gerar relatórios gráficos de todas as análises.
 
-    def generate_csv_report(self):
-        """Gera um relatório em formato CSV."""
-        self.analysis_results.to_csv(self.output_path + 'relatorio.csv', index=False)
-        print("Relatório CSV gerado com sucesso!")
+    Essa classe integra todas as visualizações geradas pelas classes de visualização específicas,
+    criando um relatório completo.
+    """
 
-    def generate_word_report(self):
-        """Gera um relatório em formato Word."""
-        doc = Document()
-        doc.add_heading('Análise de Dados do Mercado de Trabalho', level=1)
-        doc.add_paragraph('Este relatório apresenta uma análise com base nos microdados fornecidos...')
-        # Adiciona tabela com os resultados
-        table = doc.add_table(rows=1, cols=len(self.analysis_results.columns))
-        table.style = 'Table Grid'
-        for i, col_name in enumerate(self.analysis_results.columns):
-            table.cell(0, i).text = col_name
-        for _, row in self.analysis_results.iterrows():
-            cells = table.add_row().cells
-            for i, value in enumerate(row):
-                cells[i].text = str(value)
-        doc.save(self.output_path + 'relatorio.docx')
-        print("Relatório Word gerado com sucesso!")
+    def __init__(self, df, output_dir="report_visualizations"):
+        """
+        Inicializa a instância com o DataFrame e o diretório de saída.
 
+        Parameters:
+            df (pd.DataFrame): O conjunto de dados a ser analisado.
+            output_dir (str): O diretório onde os gráficos serão salvos.
+        """
+        self.df = df
+        self.output_dir = output_dir
+        os.makedirs(self.output_dir, exist_ok=True)
+
+    def generate_all_reports(self):
+        """
+        Gera todos os gráficos das análises realizadas pelas classes de visualização.
+        """
+        print("Gerando relatórios...")
+
+        # Visualizações Básicas de Estatísticas
+        print("Gerando gráficos básicos de estatísticas...")
+        from src.report.basic_statistics_visualizer import BasicStatisticsVisualizer
+        basic_visualizer = BasicStatisticsVisualizer(self.df, output_dir=self.output_dir)
+        basic_visualizer.plot_metrics_bar_chart()
+        basic_visualizer.plot_average_salary_by_year()
+
+        # Análises dos Índices
+        from src.report.employment_indexes_visualizer import EmploymentIndexesVisualizer
+        indexes_visualizer = EmploymentIndexesVisualizer(self.df, output_dir=self.output_dir)
+        indexes_visualizer.plot_salary_disparity()
+        indexes_visualizer.plot_education_index()
+
+        # Análises de Gênero
+        print("Gerando gráficos de análise de gênero...")
+        from src.report.gender_analysis_visualizer import GenderAnalysisVisualizer
+        gender_visualizer = GenderAnalysisVisualizer(self.df, output_dir=self.output_dir)
+        gender_visualizer.plot_gender_salary_gap()
+        gender_visualizer.plot_gender_ratio()
+        gender_visualizer.plot_combined_analysis()
+
+        # Análises de Cargos
+        print("Gerando gráficos de análise de cargos...")
+        from src.report.position_analysis_visualizer import PositionAnalysisVisualizer
+        position_visualizer = PositionAnalysisVisualizer(self.df, output_dir=self.output_dir)
+        position_visualizer.plot_top_positions(top_n=15)
+        position_visualizer.plot_wordcloud_positions()
+
+        # Modelos Preditivos
+        print("Gerando gráficos de modelos preditivos...")
+        from src.report.predictive_models_visualizer import PredictiveModelsVisualizer
+        models_visualizer = PredictiveModelsVisualizer(self.df, output_dir=self.output_dir)
+        models_visualizer.plot_linear_regression_coefficients()
+        models_visualizer.plot_logistic_regression_classification_report()
+        models_visualizer.plot_linear_regression_predictions()
+
+        # Testes Estatísticos
+        print("Gerando gráficos de testes estatísticos...")
+        from src.report.statistical_tests_visualizer import StatisticalTestsVisualizer
+        stats_visualizer = StatisticalTestsVisualizer(self.df, output_dir=self.output_dir)
+        stats_visualizer.plot_gender_salary_comparison(test="t-test")
+        stats_visualizer.plot_gender_salary_comparison(test="mann-whitney")
+        #stats_visualizer.plot_anova_by_region()
+        stats_visualizer.plot_anova_by_sector()
+
+        print("Relatórios completos gerados e salvos em:", self.output_dir)

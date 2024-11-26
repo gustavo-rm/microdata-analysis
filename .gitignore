@@ -75,5 +75,5 @@ faiss/
 docs/_build/
 
 # Outras pastas
-data/embeddings/
-models/
+data/raw/
+output/

@@ -15,6 +15,21 @@ class BasicStatistics:
         """
         self.df = df
 
+    def calculate_average_salary_by_year(self):
+        """
+        Calcula a média salarial para cada ano.
+
+        Returns:
+            pd.DataFrame: DataFrame com os anos e as médias salariais.
+        """
+        if 'ano' not in self.df.columns or 'valor_remuneracao_media' not in self.df.columns:
+            raise ValueError("As colunas 'ano' e 'valor_remuneracao_media' são necessárias para esta análise.")
+
+        # Agrupar por ano e calcular a média salarial
+        salary_by_year = self.df.groupby('ano')['valor_remuneracao_media'].mean().reset_index()
+        salary_by_year.columns = ['Ano', 'Média Salarial']
+        return salary_by_year
+
     def calculate_total_employees(self):
         """
         Calcula o número total de empregados no conjunto de dados.
