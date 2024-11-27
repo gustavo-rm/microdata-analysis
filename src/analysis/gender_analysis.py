@@ -144,15 +144,20 @@ class GenderAnalysis:
 
         return result.sort_values('Total de Empregados', ascending=False).reset_index(drop=True)
 
-    def top_active_employees_by_year(self):
+    def top_active_employees_by_year(self, id_municipio=None, sigla_uf=None):
         """
         Calcula qual empregado (homem ou mulher) tem mais vínculos ativos para cada ano.
+
+        Parameters:
+            id_municipio (int, optional): ID do município para filtrar os dados.
+                                          Se None, considera todos os municípios no estado especificado.
+            sigla_uf (str, optional): Sigla da UF para filtrar os dados quando `id_municipio` é None.
 
         Returns:
             pd.DataFrame: Um DataFrame contendo:
                 - Ano
-                - Sexo
-                - ID do Município
+                - Gênero
+                - ID do Município (ou Estado)
                 - Total de Vínculos Ativos
         """
         # Contar um vínculo ativo apenas se 'vinculo_ativo_3112' for 'Sim'
@@ -161,9 +166,22 @@ class GenderAnalysis:
         # Filtrar apenas os registros com vínculos ativos
         active_df = self.df[self.df['vinculo_ativo_3112'] == "Sim"]
 
-        # Agrupar por ano, sexo e município, somando os vínculos ativos
+        # Filtrar por município ou estado
+        if id_municipio is not None:
+            active_df = active_df[active_df['id_municipio'] == id_municipio]
+            group_by_col = 'id_municipio'
+            rename_col = 'ID Município'
+        elif sigla_uf is not None:
+            active_df = active_df[active_df['sigla_uf'] == sigla_uf]
+            group_by_col = 'sigla_uf'
+            rename_col = 'Estado'
+        else:
+            group_by_col = 'id_municipio'
+            rename_col = 'ID Município'
+
+        # Agrupar por ano, sexo e local (município ou estado), somando os vínculos ativos
         grouped = (
-            active_df.groupby(['ano', 'sexo', 'id_municipio'])
+            active_df.groupby(['ano', 'sexo', group_by_col])
             .agg({'quantidade_vinculos_ativos': 'sum'})
             .reset_index()
         )
@@ -176,7 +194,7 @@ class GenderAnalysis:
             columns={
                 'ano': 'Ano',
                 'sexo': 'Gênero',
-                'id_municipio': 'ID Município',
+                group_by_col: rename_col,
                 'quantidade_vinculos_ativos': 'Total de Vínculos Ativos',
             },
             inplace=True,

@@ -6,3 +6,4 @@ matplotlib
 seaborn
 geopandas
 wordcloud
+python-docx

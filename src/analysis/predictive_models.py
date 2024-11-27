@@ -4,6 +4,7 @@ from sklearn.metrics import mean_squared_error, accuracy_score, classification_r
 from sklearn.preprocessing import OneHotEncoder, LabelEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
+import pandas as pd
 
 class PredictiveModels:
     """
@@ -133,3 +134,57 @@ class PredictiveModels:
             "Acurácia": accuracy_score(y_test, predictions),
             "Relatório de Classificação": classification_report(y_test, predictions, output_dict=True)
         }
+
+    def predict_gender_salary_2024(self):
+        """
+        Prevê o salário médio de homens e mulheres em 2024 com base em um modelo de regressão linear.
+
+        Returns:
+            dict: Contém as previsões de salário médio para homens e mulheres.
+        """
+        predictions = {}
+
+        # Definir o mapeamento de escolaridade
+        education_mapping = {
+            "ANALFABETO": 0,
+            "ATE 5.A INC": 1,
+            "5.A CO FUND": 2,
+            "6. A 9. FUND": 3,
+            "FUND COMPL": 4,
+            "MEDIO INCOMP": 5,
+            "MEDIO COMPL": 6,
+            "SUP. INCOMP": 7,
+            "SUP. COMP": 8,
+            "MESTRADO": 9,
+            "DOUTORADO": 10,
+            "IGNORADO": -1
+        }
+
+        for gender in ['Masculino', 'Feminino']:
+            # Filtrar o DataFrame para o gênero atual
+            gender_df = self.df[self.df['sexo'] == gender].copy()
+
+            # Aplicar o mapeamento na coluna grau_instrucao_apos_2005
+            gender_df['grau_instrucao_num'] = gender_df['grau_instrucao_apos_2005'].map(education_mapping)
+
+            # Treinar o modelo de regressão linear
+            features = ['idade', 'tempo_emprego', 'grau_instrucao_num']
+            gender_df_clean = gender_df.dropna(subset=features + ['valor_remuneracao_media'])
+            X = gender_df_clean[features]
+            y = gender_df_clean['valor_remuneracao_media']
+
+            model = LinearRegression()
+            model.fit(X, y)
+
+            # Criar os dados futuros para previsão (ajustar conforme o contexto)
+            future_data = pd.DataFrame({
+                'idade': [25, 35, 40],  # Idades médias previstas
+                'tempo_emprego': [12, 24, 36],  # Tempo de emprego médio esperado
+                'grau_instrucao_num': [8, 9, 10]  # SUP. COMP, MESTRADO, DOUTORADO
+            })
+
+            # Prever os salários médios
+            predicted_salaries = model.predict(future_data)
+            predictions[gender] = predicted_salaries.mean()  # Salário médio previsto para o gênero
+
+        return predictions

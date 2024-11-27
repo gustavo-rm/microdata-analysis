@@ -200,7 +200,7 @@ class GenderAnalysisVisualizer(BaseVisualizer):
         para homens e mulheres e salva o gráfico em PNG.
         """
         # Obter os dados de vínculos ativos
-        active_employees = self.analysis.top_active_employees_by_year()
+        active_employees = self.analysis.top_active_employees_by_year(sigla_uf="PR")
 
         # Configurar o gráfico
         plt.figure(figsize=(12, 8))

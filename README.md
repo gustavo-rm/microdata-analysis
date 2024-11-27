@@ -50,6 +50,60 @@ project/
 
 ---
 
+## **📥 Dados de Entrada**
+
+Os dados foram extraídos do **BigQuery** com a consulta abaixo. A tabela utilizada foi `basedosdados.br_me_rais.microdados_vinculos`, acessível por meio da plataforma [Basedosdados](https://console.cloud.google.com/bigquery?p=basedosdados&d=br_me_rais&t=microdados_vinculos&page=table).
+
+### **Consulta Utilizada**
+```sql
+WITH 
+dicionario_tipo_vinculo AS (
+    SELECT
+        chave AS chave_tipo_vinculo,
+        valor AS descricao_tipo_vinculo
+    FROM `basedosdados.br_me_rais.dicionario`
+    WHERE
+        TRUE
+        AND nome_coluna = 'tipo_vinculo'
+        AND id_tabela = 'microdados_vinculos'
+),
+-- Outras tabelas para dicionários de códigos...
+SELECT
+    dados.ano AS ano,
+    dados.sigla_uf AS sigla_uf,
+    diretorio_sigla_uf.nome AS sigla_uf_nome,
+    dados.id_municipio AS id_municipio,
+    diretorio_id_municipio.nome AS id_municipio_nome,
+    descricao_tipo_vinculo AS tipo_vinculo,
+    dados.valor_remuneracao_media AS valor_remuneracao_media,
+    dados.cbo_2002 AS cbo_2002,
+    diretorio_cbo_2002.descricao AS cbo_2002_descricao,
+    dados.idade AS idade,
+    descricao_sexo AS sexo
+FROM `basedosdados.br_me_rais.microdados_vinculos` AS dados
+LEFT JOIN (SELECT DISTINCT sigla, nome FROM `basedosdados.br_bd_diretorios_brasil.uf`) AS diretorio_sigla_uf
+    ON dados.sigla_uf = diretorio_sigla_uf.sigla
+LEFT JOIN (SELECT DISTINCT id_municipio, nome FROM `basedosdados.br_bd_diretorios_brasil.municipio`) AS diretorio_id_municipio
+    ON dados.id_municipio = diretorio_id_municipio.id_municipio
+LEFT JOIN (SELECT DISTINCT cbo_2002, descricao FROM `basedosdados.br_bd_diretorios_brasil.cbo_2002`) AS diretorio_cbo_2002
+    ON dados.cbo_2002 = diretorio_cbo_2002.cbo_2002
+LEFT JOIN `dicionario_tipo_vinculo`
+    ON dados.tipo_vinculo = chave_tipo_vinculo
+LEFT JOIN `dicionario_sexo`
+    ON dados.sexo = chave_sexo
+WHERE
+    (dados.cbo_2002 LIKE '2123%' OR
+     dados.cbo_2002 LIKE '2124%' OR
+     dados.cbo_2002 LIKE '1236%' OR
+     dados.cbo_2002 LIKE '1425%' OR
+     dados.cbo_2002 LIKE '3172%' OR
+     dados.cbo_2002 LIKE '3171%')
+    AND dados.sigla_uf LIKE 'PR'
+    AND dados.idade BETWEEN 18 AND 64;
+```
+
+---
+
 ## 🚀 **Recursos Principais**
 
 ### 🧩 **Análises**
