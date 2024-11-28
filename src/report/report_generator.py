@@ -20,63 +20,90 @@ class ReportGenerator:
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
 
+    def generate_basic_statistics_reports(self):
+        """
+        Gera gráficos relacionados a estatísticas básicas.
+        """
+        print("Gerando gráficos básicos de estatísticas...")
+        from src.report.basic_statistics_visualizer import BasicStatisticsVisualizer
+        visualizer = BasicStatisticsVisualizer(self.df, output_dir=self.output_dir)
+        visualizer.plot_metrics_bar_chart()
+        visualizer.plot_average_salary_by_year()
+
+    def generate_employment_indexes_reports(self):
+        """
+        Gera gráficos relacionados aos índices de emprego.
+        """
+        print("Gerando gráficos de índices de emprego...")
+        from src.report.employment_indexes_visualizer import EmploymentIndexesVisualizer
+        visualizer = EmploymentIndexesVisualizer(self.df, output_dir=self.output_dir)
+        visualizer.plot_salary_disparity()
+        visualizer.plot_education_index()
+
+    def generate_gender_analysis_reports(self):
+        """
+        Gera gráficos relacionados à análise de gênero.
+        """
+        print("Gerando gráficos de análise de gênero...")
+        from src.report.gender_analysis_visualizer import GenderAnalysisVisualizer
+        visualizer = GenderAnalysisVisualizer(self.df, output_dir=self.output_dir)
+        visualizer.plot_gender_salary_gap()
+        visualizer.plot_gender_ratio()
+        visualizer.plot_combined_analysis()
+        visualizer.plot_salary_comparison_top_10_jobs()
+        visualizer.plot_top_active_employees_by_year()
+
+    def generate_position_analysis_reports(self):
+        """
+        Gera gráficos relacionados à análise de cargos.
+        """
+        print("Gerando gráficos de análise de cargos...")
+        from src.report.position_analysis_visualizer import PositionAnalysisVisualizer
+        visualizer = PositionAnalysisVisualizer(self.df, output_dir=self.output_dir)
+        visualizer.plot_top_positions(top_n=15)
+
+    def generate_regional_analysis_reports(self):
+        """
+        Gera gráficos relacionados à análise regional.
+        """
+        print("Gerando gráficos de análise regional...")
+        from src.report.regional_analysis_visualizer import RegionalAnalysisVisualizer
+        visualizer = RegionalAnalysisVisualizer(self.df, output_dir=self.output_dir)
+        visualizer.plot_average_salary_top_5_cities()
+
+    def generate_predictive_models_reports(self):
+        """
+        Gera gráficos relacionados aos modelos preditivos.
+        """
+        print("Gerando gráficos de modelos preditivos...")
+        from src.report.predictive_models_visualizer import PredictiveModelsVisualizer
+        visualizer = PredictiveModelsVisualizer(self.df, output_dir=self.output_dir)
+        visualizer.plot_linear_regression_coefficients()
+        visualizer.plot_logistic_regression_classification_report()
+        visualizer.plot_linear_regression_predictions()
+
+    def generate_statistical_tests_reports(self):
+        """
+        Gera gráficos relacionados aos testes estatísticos.
+        """
+        print("Gerando gráficos de testes estatísticos...")
+        from src.report.statistical_tests_visualizer import StatisticalTestsVisualizer
+        visualizer = StatisticalTestsVisualizer(self.df, output_dir=self.output_dir)
+        visualizer.plot_gender_salary_comparison(test="t-test")
+        visualizer.plot_gender_salary_comparison(test="mann-whitney")
+        visualizer.plot_anova_by_region()
+        visualizer.plot_anova_by_sector()
+
     def generate_all_reports(self):
         """
         Gera todos os gráficos das análises realizadas pelas classes de visualização.
         """
         print("Gerando relatórios...")
-
-        # Visualizações Básicas de Estatísticas
-        print("Gerando gráficos básicos de estatísticas...")
-        from src.report.basic_statistics_visualizer import BasicStatisticsVisualizer
-        basic_visualizer = BasicStatisticsVisualizer(self.df, output_dir=self.output_dir)
-        basic_visualizer.plot_metrics_bar_chart()
-        basic_visualizer.plot_average_salary_by_year()
-
-        # Análises dos Índices
-        from src.report.employment_indexes_visualizer import EmploymentIndexesVisualizer
-        indexes_visualizer = EmploymentIndexesVisualizer(self.df, output_dir=self.output_dir)
-        indexes_visualizer.plot_salary_disparity()
-        indexes_visualizer.plot_education_index()
-
-        # Análises de Gênero
-        print("Gerando gráficos de análise de gênero...")
-        from src.report.gender_analysis_visualizer import GenderAnalysisVisualizer
-        gender_visualizer = GenderAnalysisVisualizer(self.df, output_dir=self.output_dir)
-        gender_visualizer.plot_gender_salary_gap()
-        gender_visualizer.plot_gender_ratio()
-        gender_visualizer.plot_combined_analysis()
-        gender_visualizer.plot_salary_comparison_top_10_jobs()
-        gender_visualizer.plot_top_active_employees_by_year()
-
-        # Análises de Cargos
-        print("Gerando gráficos de análise de cargos...")
-        from src.report.position_analysis_visualizer import PositionAnalysisVisualizer
-        position_visualizer = PositionAnalysisVisualizer(self.df, output_dir=self.output_dir)
-        position_visualizer.plot_top_positions(top_n=15)
-        #position_visualizer.plot_wordcloud_positions()
-
-        # Modelos Preditivos
-        #print("Gerando gráficos de modelos preditivos...")
-        #from src.report.predictive_models_visualizer import PredictiveModelsVisualizer
-        #models_visualizer = PredictiveModelsVisualizer(self.df, output_dir=self.output_dir)
-        #models_visualizer.plot_linear_regression_coefficients()
-        #models_visualizer.plot_logistic_regression_classification_report()
-        #models_visualizer.plot_linear_regression_predictions()
-
-        # Análise Regional
-        print("Gerando gráficos de análise regional...")
-        from src.report.regional_analysis_visualizer import RegionalAnalysisVisualizer
-        regional_visualizer = RegionalAnalysisVisualizer(self.df, output_dir=self.output_dir)
-        regional_visualizer.plot_average_salary_top_5_cities()
-
-        # Testes Estatísticos
-        #print("Gerando gráficos de testes estatísticos...")
-        #from src.report.statistical_tests_visualizer import StatisticalTestsVisualizer
-        #stats_visualizer = StatisticalTestsVisualizer(self.df, output_dir=self.output_dir)
-        #stats_visualizer.plot_gender_salary_comparison(test="t-test")
-        #stats_visualizer.plot_gender_salary_comparison(test="mann-whitney")
-        #stats_visualizer.plot_anova_by_region()
-        #stats_visualizer.plot_anova_by_sector()
-
+        self.generate_basic_statistics_reports()
+        self.generate_employment_indexes_reports()
+        self.generate_gender_analysis_reports()
+        self.generate_position_analysis_reports()
+        self.generate_regional_analysis_reports()
+        self.generate_predictive_models_reports()
+        self.generate_statistical_tests_reports()
         print("Relatórios completos gerados e salvos em:", self.output_dir)

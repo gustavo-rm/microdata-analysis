@@ -75,17 +75,40 @@ class StatisticalTestsVisualizer(BaseVisualizer):
 
     def plot_anova_by_sector(self):
         """
-        Gera um gráfico de caixa comparando salários entre diferentes setores econômicos.
+        Gera um gráfico de caixa comparando salários entre diferentes setores econômicos, com suporte a `hue`.
         """
         # Executa o teste ANOVA
         result = self.tests.anova_salary_by_sector()
 
+        # Adiciona a categoria como hue para distinção adicional
+        self.tests.df['Categoria'] = 'Famílias CBO'
+
+        # Função para quebrar rótulos a cada 2 palavras
+        def break_labels(label, words_per_line=2):
+            words = label.split()
+            return '\n'.join([' '.join(words[i:i + words_per_line]) for i in range(0, len(words), words_per_line)])
+
+        # Ajusta os rótulos do eixo X
+        self.tests.df['cbo_2002_descricao_familia'] = self.tests.df['cbo_2002_descricao_familia'].apply(
+            lambda x: break_labels(x, words_per_line=2)
+        )
+
         # Dados para o gráfico
         plt.figure(figsize=(12, 8))
-        sns.boxplot(x='subsetor_ibge', y='valor_remuneracao_media', data=self.tests.df, palette="magma")
-        plt.title(f"Comparação Salarial entre Setores (ANOVA)\nValor-p: {result['Valor-p']:.4f}")
+        sns.boxplot(
+            x='cbo_2002_descricao_familia',
+            y='valor_remuneracao_media',
+            hue='Categoria',  # Adiciona o hue
+            data=self.tests.df,
+            palette="magma"
+        )
+        plt.title(f"Comparação Salarial entre Famílias CBO (ANOVA)\nValor-p: {result['Valor-p']:.4f}")
         plt.ylabel("Salário Médio")
-        plt.xlabel("Setor Econômico")
-        plt.xticks(rotation=45)
+        plt.xlabel("")
+        plt.xticks(rotation=0)  # Mantém os rótulos alinhados após a quebra
+
+        # Ajustar a posição da legenda
+        plt.legend(title="Categoria", loc="upper right")  # Posição no canto superior direito
+
         plt.tight_layout()
         self.save_plot("anova_salary_by_sector.png")
